@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scalable=no" />
+
+  <title>To-Do Pro</title>
+
+  <link rel="stylesheet" href="./src/styles/main.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="./src/assets/icons/icon-192.png">
+
+</head>
+<body>
+
+  <h1>To-Do Pro</h1>
+
+  <div id="taskList"></div>
+
+  <button onclick="window.location.href='./src/views/addTask.html'">Agregar Tarea</button>
+
+  <!-- Scripts -->
+  <script src="./src/components/db.js"></script>
+  <script src="./src/components/api.js"></script>
+  <script src="./src/components/taskList.js"></script>
+  <script src="./src/components/notifications.js"></script>
+  <script src="./src/app.js"></script>
+
+</body>
+</html>

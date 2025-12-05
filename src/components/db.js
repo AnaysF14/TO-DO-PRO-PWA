@@ -1,44 +1,127 @@
+const DB_NAME = 'ToDoProDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'tasks';
+
 let db;
 
-const request = indexedDB.open("todoDB", 1);
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-request.onupgradeneeded = (event) => {
-  db = event.target.result;
-  const store = db.createObjectStore("tasks", { keyPath: "id", autoIncrement: true });
-  store.createIndex("completed", "completed", { unique: false });
-};
+    request.onupgradeneeded = (event) => {
+      db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+        objectStore.createIndex('completed', 'completed', { unique: false });
+        objectStore.createIndex('createdAt', 'createdAt', { unique: false });
+      }
+    };
 
-request.onsuccess = (event) => {
-  db = event.target.result;
-};
+    request.onsuccess = () => {
+      db = request.result;
+      console.log('IndexedDB inicializada');
+      resolve(db);
+    };
 
-function addTask(task) {
-  const tx = db.transaction("tasks", "readwrite");
-  tx.objectStore("tasks").add(task);
+    request.onerror = () => {
+      console.error('Error en IndexedDB:', request.error);
+      reject(request.error);
+    };
+  });
 }
 
-function getTasks(callback) {
-  const tx = db.transaction("tasks", "readonly");
-  const store = tx.objectStore("tasks");
-  const tasks = [];
+function addTask(taskData) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const request = objectStore.add(taskData);
 
-  store.openCursor().onsuccess = function (event) {
-    const cursor = event.target.result;
-    if (cursor) {
-      tasks.push(cursor.value);
-      cursor.continue();
-    } else {
-      callback(tasks);
-    }
-  };
+    request.onsuccess = () => {
+      console.log('Tarea guardada con ID:', request.result);
+      resolve(request.result);
+    };
+
+    request.onerror = () => {
+      console.error('Error al agregar tarea:', request.error);
+      reject(request.error);
+    };
+  });
 }
 
-function updateTaskDB(task) {
-  const tx = db.transaction("tasks", "readwrite");
-  tx.objectStore("tasks").put(task);
+function getAllTasks() {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readonly');
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const request = objectStore.getAll();
+
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+
+    request.onerror = () => {
+      console.error('Error al obtener tareas:', request.error);
+      reject(request.error);
+    };
+  });
 }
 
-function deleteTask(id) {
-  const tx = db.transaction("tasks", "readwrite");
-  tx.objectStore("tasks").delete(id);
+function updateTask(taskId, updatedData) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const request = objectStore.get(taskId);
+
+    request.onsuccess = () => {
+      const task = request.result;
+      const updatedTask = { ...task, ...updatedData, updatedAt: new Date().toISOString() };
+      const updateRequest = objectStore.put(updatedTask);
+
+      updateRequest.onsuccess = () => {
+        resolve(updatedTask);
+      };
+
+      updateRequest.onerror = () => {
+        reject(updateRequest.error);
+      };
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
 }
+
+function deleteTask(taskId) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readwrite');
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const request = objectStore.delete(taskId);
+
+    request.onsuccess = () => {
+      console.log('Tarea eliminada:', taskId);
+      resolve();
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
+function getTaskById(taskId) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([STORE_NAME], 'readonly');
+    const objectStore = transaction.objectStore(STORE_NAME);
+    const request = objectStore.get(taskId);
+
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
+initDB().catch(error => console.error('Error fatal:', error));

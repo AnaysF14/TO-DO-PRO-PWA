@@ -1,9 +1,63 @@
-<h2>Agregar tarea</h2>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agregar Tarea - To-Do Pro</title>
+  <link rel="stylesheet" href="../styles/form-styles.css">
+</head>
+<body>
 
-<input id="title" placeholder="Título" />
-<textarea id="description" placeholder="Descripción"></textarea>
+  <div class="form-container">
+    <h2>Crear Nueva Tarea</h2>
+    <p class="form-subtitle">Organiza tus tareas de forma simple y efectiva</p>
 
-<button onclick="saveTask()">Guardar</button>
+    <form id="taskForm">
+      <div class="form-group">
+        <label for="title">Título *</label>
+        <input 
+          id="title" 
+          type="text" 
+          placeholder="Ej: Comprar groceries" 
+          required
+          maxlength="100"
+        />
+        <div class="char-count"><span id="titleCount">0</span>/100</div>
+      </div>
 
-<script src="../components/db.js"></script>
-<script src="../components/taskForm.js"></script>
+      <div class="form-group">
+        <label for="description">Descripción</label>
+        <textarea 
+          id="description" 
+          placeholder="Agrega más detalles sobre tu tarea (opcional)..."
+          maxlength="500"
+        ></textarea>
+        <div class="char-count"><span id="descCount">0</span>/500</div>
+      </div>
+
+      <div class="form-hint">
+        ℹ️ Las tareas se guardan automáticamente en tu dispositivo
+      </div>
+
+      <div class="form-buttons">
+        <button type="submit">💾 Guardar Tarea</button>
+        <button type="button" onclick="goBack()">✕ Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="../components/db.js"></script>
+  <script src="../components/taskForm.js"></script>
+  <script>
+    // Contador de caracteres
+    document.getElementById('title').addEventListener('input', (e) => {
+      document.getElementById('titleCount').textContent = e.target.value.length;
+    });
+
+    document.getElementById('description').addEventListener('input', (e) => {
+      document.getElementById('descCount').textContent = e.target.value.length;
+    });
+  </script>
+
+</body>
+</html>
